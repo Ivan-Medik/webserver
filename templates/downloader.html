@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+        <title>Скачать с ютуба</title>
+    {% endblock %}
+{% block content %}
+    <div class="container">
+        <h1 class="rubik main_text_youtube">Скачать с {{ data }}</h1>
+        <form method="POST" action="{% url 'process_video' %}" onsubmit="return false;">
+            {% csrf_token %}
+            <div class="input-container">
+                <input type="text" id="youtube-link" name="youtube_link" placeholder="Введите ссылку ..." class="rubik" required>
+                <button type="button" id="search-button" class="rubik" onclick="searchVideo()">Найти</button>
+            </div>
+        </form>
+        <div id="result">
+            <!-- Контейнер для результата -->
+        </div>
+    </div>
+
+    <script>
+        function openLink(url) {
+            window.open(url, '_blank');
+        }
+        function searchVideo() {
+            const link = document.getElementById('youtube-link').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const searchButton = document.getElementById('search-button');
+            const resultContainer = document.getElementById('result');
+        
+            if (!link.trim()) {
+                alert("Введите ссылку!");
+                return;
+            }
+        
+            // Показать индикатор загрузки
+            searchButton.innerHTML = '<div class="spinner"></div>';
+        
+            fetch('/process_video/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ youtube_link: link }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Вернуть кнопку в исходное состояние
+                    searchButton.innerHTML = 'Найти';
+        
+                    // Очистить результат
+                    resultContainer.innerHTML = '';
+        
+                    if (data.status === "success") {
+                        // Отобразить кастомизированное окно с результатами
+                        resultContainer.innerHTML = `
+                            <div class="result-container">
+                                <img src="${data.thumbnail}" alt="Video Thumbnail">
+                                <h2>${data.video_title}</h2>
+                                <div class="button-grid">
+                                    ${data.buttons.map(button => `
+                                        <button class="custom-download-btn rubik" onclick="downloadVideo('${button.action}')">
+                                            ${button.text}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Показать сообщение об ошибке и картинку
+                        resultContainer.innerHTML = `
+                            <div class="result-container">
+                                <img src="${data.thumbnail}" alt="No Video Found">
+                                <p style="color: red; margin-top: 10px;">${data.message}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    searchButton.innerHTML = 'Найти';
+                });
+        }
+        
+        function downloadVideo(format) {
+            const link = document.getElementById('youtube-link').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            if (!link.trim()) {
+                alert("Введите ссылку!");
+                return;
+            }
+
+            fetch('/download_video/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ youtube_link: link, format: format }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Создаем временную ссылку для загрузки файла
+                        return response.blob().then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = ''; // Имя файла берется из заголовка ответа сервера
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        });
+                    } else {
+                        return response.json().then(data => {
+                            alert(data.message || 'Ошибка при загрузке');
+                        });
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+    </script>
+{% endblock %}

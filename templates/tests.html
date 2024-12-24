@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+<title>Скачать с ютуба</title>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1 class="rubik">Скачать с {{ data }}</h1>
+    <form method="POST" action="{% url 'process_video' %}" onsubmit="return false;">
+        {% csrf_token %}
+        <div class="input-container">
+            <input type="text" id="youtube-link" name="youtube_link" placeholder="Введите ссылку ..." class="rubik" required>
+            <button type="button" id="search-button" class="rubik" onclick="searchVideo()">
+                Найти
+            </button>
+        </div>
+    </form>
+    <div id="result"></div>
+</div>
+{% endblock %}

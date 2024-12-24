@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    {% block title %}
+        <title>Мечты реальны</title>
+    {% endblock %}
+</head>
+<body>
+    {% block content %}
+    <div class="container">
+        <h1 class="">Мечты реальны</h1>
+        <div class="buttons">
+            <button class="youtube rubik" onclick="location.href='downloader/?d=0'">YouTube</button>
+            <button class="tiktok rubik" onclick="location.href='downloader/?d=1'">TikTok</button>
+            <button class="etc rubik" onclick="alert('Другие ссылки в разработке!')">E.T.C.</button>
+        </div>
+    </div>
+    {% endblock %}
+    <script>
+        function openLink(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
