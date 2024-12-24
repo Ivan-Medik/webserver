@@ -42,7 +42,10 @@ def process_video(request):
             ydl_opts = {
                 'format': 'best',
                 'quiet': True,
-                'cookiesfrombrowser': ('firefox',),
+                'proxy': 'http://myofficialacaunt3:SLDZGNQPUp@45.153.162.175:59100',
+                # curl -x http://myofficialacaunt3:SLDZGNQPUp@45.153.162.175:59100 https://www.youtube.com
+                'cookiefile': 'media/cookies.txt',
+                # 'cookiesfrombrowser': ('firefox',),
             }
 
             with YoutubeDL(ydl_opts) as ydl:
